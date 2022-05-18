@@ -1,0 +1,45 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.spring.io/release' }
+        // resolve last due to intermittent jcenter issues
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'com.gradle.enterprise' version '3.10'
+    id 'io.spring.ge.conventions' version '0.0.9'
+}
+
+rootProject.name = 'micrometer'
+
+buildCache {
+    remote(HttpBuildCache) {
+        url = 'https://ge.micrometer.io/cache/'
+    }
+}
+gradleEnterprise {
+    server = 'https://ge.micrometer.io'
+}
+
+include 'micrometer-commons', 'micrometer-core', 'micrometer-observation'
+
+['core', 'boot2', 'boot2-reactive', 'spring-integration', 'hazelcast', 'hazelcast3', 'javalin', 'jersey3'].each { sample ->
+    include "micrometer-samples-$sample"
+    project(":micrometer-samples-$sample").projectDir = new File(rootProject.projectDir, "samples/micrometer-samples-$sample")
+}
+
+include 'micrometer-test', 'micrometer-observation-test'
+
+['atlas', 'prometheus', 'datadog', 'elastic', 'ganglia', 'graphite', 'health', 'jmx', 'influx', 'otlp', 'statsd', 'new-relic', 'cloudwatch', 'cloudwatch2', 'signalfx', 'wavefront', 'dynatrace', 'azure-monitor', 'humio', 'appoptics', 'kairos', 'stackdriver', 'opentsdb'].each { sys ->
+    include "micrometer-registry-$sys"
+    project(":micrometer-registry-$sys").projectDir = new File(rootProject.projectDir, "implementations/micrometer-registry-$sys")
+}
+
+['core'].each { benchmark ->
+    include "micrometer-benchmarks-$benchmark"
+    project(":micrometer-benchmarks-$benchmark").projectDir = new File(rootProject.projectDir, "benchmarks/benchmarks-$benchmark")
+}
+
+include 'micrometer-bom'
